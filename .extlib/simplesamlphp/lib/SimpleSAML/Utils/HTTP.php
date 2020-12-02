@@ -851,6 +851,15 @@ class HTTP
                 $hostname = self::getServerHost();
                 $port = self::getServerPort();
             }
+
+            // XTEC ************ AFEGIT - Added support for HTTP proxies and load balancers
+            // 2020.12.02 @aginard
+            if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) {
+                $protocol = 'https';
+                $port = '';
+            }
+            //************ FI
+
             return $protocol . '://' . $hostname . $port . $_SERVER['REQUEST_URI'];
         }
 
