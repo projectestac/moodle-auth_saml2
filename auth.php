@@ -604,6 +604,36 @@ class auth_plugin_saml2 extends auth_plugin_base {
             }
         }
 
+        // XTEC ************ AFEGIT - Log Users Logins (GICAR)
+        // 2021.03.22 @iban.cardona
+
+        // Get & clean param
+        $log_xtec_dni = strtolower($attributes['eduPersonPrincipalName'][0]);
+        $log_xtec_intranetperm = trim($attributes['documentIdentifier'][0]);
+        $log_xtec_txt = '';
+        $log_xtec_separator = ';';
+        $log_xtec_newuser = 'new_user';
+        $log_xtec_existinguser = 'existing_user';
+        $log_xtec_repository_name = 'log_xtec_gicar';
+        $log_xtec_dirname = $CFG->dataroot.'/repository/'.$log_xtec_repository_name;
+
+        if (strcmp($log_xtec_intranetperm, 'Tot correcte') !== 0) {
+            $log_xtec_txt .= time();
+            $log_xtec_txt .= $log_xtec_separator.$log_xtec_dni;
+            $log_xtec_txt .= $log_xtec_separator.$log_xtec_intranetperm;
+            if (!$user) {
+                $log_xtec_txt .= $log_xtec_separator.$log_xtec_newuser;
+            } else {
+                $log_xtec_txt .= $log_xtec_separator.$log_xtec_existinguser;
+            }
+
+            if (!file_exists($log_xtec_dirname)) {
+                mkdir($log_xtec_dirname, 0777, true);
+            }
+            file_put_contents($log_xtec_dirname.'/log_xtec_gicar'.date("Ymd").'.log', $log_xtec_txt, FILE_APPEND);
+        }
+        //************ FI
+
         // Testing user's groups and allow access decided on preferences.
         if (!$this->is_access_allowed_for_member($attributes)) {
             $this->handle_blocked_access();
