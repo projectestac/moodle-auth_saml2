@@ -631,6 +631,32 @@ class auth extends \auth_plugin_base {
 
         $attr = $this->config->idpattr;
         if (empty($attributes[$attr])) {
+
+            // XTEC ************ AFEGIT - Log GICAR errors
+            // 2022.02.23 @iban.cardona
+            // Get & clean param
+            $log_error_gicar_txt = '';
+            $log_error_gicar_separator = ';';
+            $log_error_gicar_repository_name = 'log_error_gicar';
+            $log_error_gicar_dirname = $CFG->dataroot . '/repository/' . $log_error_gicar_repository_name;
+
+            $log_error_gicar_txt .= time();
+            $log_error_gicar_txt .= $log_error_gicar_separator . http_build_query($attributes);
+            $log_error_gicar_txt .= "\n";
+
+            if (!file_exists($log_error_gicar_dirname) &&
+                !mkdir($log_error_gicar_dirname, 0777, true) &&
+                !is_dir($log_error_gicar_dirname)) {
+                throw new \RuntimeException(sprintf('Directory "%s" was not created', $log_error_gicar_dirname));
+            }
+
+            file_put_contents(
+                $log_error_gicar_dirname . '/log_error_gicar' . date("Ymd") . '.log',
+                $log_error_gicar_txt,
+                FILE_APPEND
+            );
+            // ************ FI
+
             // Missing mapping IdP attribute. Login failed.
             $event = \core\event\user_login_failed::create(['other' => ['username' => 'unknown',
                 'reason' => AUTH_LOGIN_NOUSER]]);
